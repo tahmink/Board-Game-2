@@ -1,83 +1,402 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Board Game: Adjective & Prepositions, What's your Position?</title>
-<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
-<style>
-:root{ --tile:84; --gapY:140; }
-body{font-family: Tahoma, Geneva, Verdana, sans-serif; background:#f0f4f8; margin:0}
-h1{margin:18px 0 6px; text-align:center; font-size:clamp(20px,3.2vw,32px); font-weight:900; letter-spacing:.3px;
-background: linear-gradient(90deg,#a855f7,#ec4899,#f97316); -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-text-shadow:2px 2px 4px rgba(0,0,0,.18); display:none }
-.wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
-.setup{background:#fff; padding:16px; border-radius:14px; box-shadow:0 8px 30px rgba(0,0,0,.08); width:min(860px,92vw)}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.player-input{display:flex;flex-direction:column;gap:6px; padding:10px 12px; border:1px solid #e5e7eb; border-radius:12px; transition:box-shadow .15s}
-.color-options{display:flex;gap:8px; flex-wrap:wrap}
-.swatch{width:32px;height:32px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,.2);cursor:pointer}
-.emoji{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:#fff;border:1px solid #e5e7eb;box-shadow:0 1px 0 rgba(0,0,0,.04);cursor:pointer;font-size:26px}
-.selected{outline:3px solid #111}
-button{padding:10px 14px;border:0;border-radius:10px;background:#2563eb;color:#fff;font-family:'Luckiest Guy',cursive;font-size:16px;cursor:pointer}
-button.secondary{background:#6b7280}
-#controls{display:none;gap:8px;align-items:center}
-#status{font-weight:700}
-canvas{$1width:min(98vw, 1400px); height:auto$2}
-#questionModal{display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); align-items:center; justify-content:center; padding:20px}
-#questionBox{background:#fff; padding:18px 16px; border-radius:14px; max-width:min(560px,92vw); box-shadow:0 10px 30px rgba(0,0,0,.25); font-family:'Luckiest Guy',cursive}
-#questionBox h2{margin:0 0 8px}
-#sheetWrapper, #titleWrapper { font-size:12px; color:#555; margin-top:6px; display:flex; gap:6px; align-items:center }
-#sheetUrl, #customTitle { font-size:12px; padding:4px 6px; border-radius:6px; border:1px solid #ccc; min-width:200px }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Board Game: Adjective & Prepositions, What's your Position?</title>
+  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+  <style>
+    :root{ --tile:84; }
+    body{font-family: Tahoma, Geneva, Verdana, sans-serif; background:#f0f4f8; margin:0}
+    h1{margin:18px 0 6px; text-align:center; font-size:clamp(20px,3.2vw,32px); font-weight:900; letter-spacing:.3px;
+       background: linear-gradient(90deg,#a855f7,#ec4899,#f97316); -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+       text-shadow:2px 2px 4px rgba(0,0,0,.18); display:none }
+    .wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+    .setup{background:#fff; padding:16px; border-radius:14px; box-shadow:0 8px 30px rgba(0,0,0,.08); width:min(880px,92vw)}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .player-input{display:flex;flex-direction:column;gap:6px; padding:10px 12px; border:1px solid #e5e7eb; border-radius:12px; transition:box-shadow .15s}
+    .color-options{display:flex;gap:8px; flex-wrap:wrap}
+    .swatch{width:32px;height:32px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,.2);cursor:pointer}
+    .emoji{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:#fff;border:1px solid #e5e7eb;box-shadow:0 1px 0 rgba(0,0,0,.04);cursor:pointer;font-size:26px}
+    .selected{outline:3px solid #111}
+    button{padding:10px 14px;border:0;border-radius:10px;background:#2563eb;color:#fff;font-family:'Luckiest Guy',cursive;font-size:16px;cursor:pointer}
+    button.secondary{background:#6b7280}
+    #controls{display:none;gap:8px;align-items:center}
+    #status{font-weight:700}
+    canvas{background:#fff;border:3px solid #111;border-radius:14px; display:none; touch-action:none; width:min(98vw, 1400px); height:auto}
+    #questionModal{display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); align-items:center; justify-content:center; padding:20px}
+    #questionBox{background:#fff; padding:18px 16px; border-radius:14px; max-width:min(560px,92vw); box-shadow:0 10px 30px rgba(0,0,0,.25); font-family:'Luckiest Guy',cursive}
+    #questionBox h2{margin:0 0 8px}
+    #sheetWrapper, #titleWrapper { font-size:12px; color:#555; margin-top:6px; display:flex; gap:6px; align-items:center }
+    #sheetUrl, #customTitle { font-size:12px; padding:4px 6px; border-radius:6px; border:1px solid #ccc; min-width:200px }
+  </style>
 </head>
 <body>
-<div class="wrap">
-<h1>Board Game: Adjective & Prepositions, What's your Position?</h1>
+  <div class="wrap">
+    <h1>Board Game: Adjective & Prepositions, What's your Position?</h1>
 
-<div class="setup" id="setup">
-<div class="row">
-<label for="numPlayers"><strong>Number of Players:</strong></label>
-<select id="numPlayers">
-<option value="2">2</option>
-<option value="3">3</option>
-<option value="4">4</option>
-<option value="5">5</option>
-<option value="6">6</option>
-</select>
-<button id="buildBtn" class="secondary">Build Player Forms</button>
-</div>
-<div id="playerForms" style="margin-top:10px; display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:10px"></div>
-<div id="sheetWrapper">
-<label for="sheetUrl">Google Sheet (CSV):</label>
-<input id="sheetUrl" type="text" />
-</div>
-<div id="titleWrapper">
-<label for="customTitle">Custom Game Title (optional):</label>
-<input id="customTitle" type="text" placeholder="Leave blank to keep default" />
-</div>
-<div class="row" style="justify-content:flex-end; margin-top:8px">
-<button id="startBtn">Start Game</button>
-</div>
-</div>
+    <div class="setup" id="setup">
+      <div class="row">
+        <label for="numPlayers"><strong>Number of Players:</strong></label>
+        <select id="numPlayers">
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+        <button id="buildBtn" class="secondary" type="button">Build Player Forms</button>
+      </div>
+      <div id="playerForms" style="margin-top:10px; display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:10px"></div>
+      <div id="sheetWrapper">
+        <label for="sheetUrl">Google Sheet (CSV):</label>
+        <input id="sheetUrl" type="text" />
+      </div>
+      <div id="titleWrapper">
+        <label for="customTitle">Custom Game Title (optional):</label>
+        <input id="customTitle" type="text" placeholder="Leave blank to keep default" />
+      </div>
+      <div class="row" style="justify-content:flex-end; margin-top:8px">
+        <button id="startBtn" type="button">Start Game</button>
+      </div>
+    </div>
 
-<div id="controls" class="row">
-<button id="rollBtn">Roll Dice</button>
-<button id="nextBtn" class="secondary">Next Turn</button>
-<button id="resetBtn" class="secondary">Reset</button>
-<label style="display:flex;align-items:center;gap:6px; margin-left:8px">
-<input type="checkbox" id="manualToggle" /> Manual move mode
-</label>
-<span id="status"></span>
-</div>
+    <div id="controls" class="row">
+      <button id="rollBtn" type="button">Roll Dice</button>
+      <button id="nextBtn" class="secondary" type="button">Next Turn</button>
+      <button id="resetBtn" class="secondary" type="button">Reset</button>
+      <label style="display:flex;align-items:center;gap:6px; margin-left:8px">
+        <input type="checkbox" id="manualToggle" /> Manual move mode
+      </label>
+      <span id="status"></span>
+    </div>
 
-<canvas id="board" width="1400" height="700" aria-label="Game board"></canvas>
-</div>
+    <canvas id="board" width="1400" height="700" aria-label="Game board"></canvas>
+  </div>
 
-<div id="questionModal">
-<div id="questionBox">
-<h2 id="tileLabel">Tile</h2>
-<div id="questionText"></div>
-<div style="text-align:right;margin-top:12px"><button id="closeModal">Close</button></div>
-</div>
+  <div id="questionModal">
+    <div id="questionBox">
+      <h2 id="tileLabel">Tile</h2>
+      <div id="questionText"></div>
+      <div style="text-align:right;margin-top:12px"><button id="closeModal" type="button">Close</button></div>
+    </div>
+  </div>
+
+<script>
+(()=>{
+  // ----- Config (short version) -----
+  const TOTAL = 30;            // tiles (30 = FINISH)
+  const TILES_PER_ROW = 9;     // horizontal run per row
+  const TILE = 84;             // tile size (px)
+  const STEP_Y = 120;          // vertical distance between row centers
+  const RADIUS = 14;           // rounded corner radius
+
+  const palette = ["#ef4444","#f97316","#eab308","#22c55e","#3b82f6","#a855f7"]; // fallback colors
+  const tileColors = ["#fde68a","#bbf7d0","#bfdbfe","#fbcfe8"]; // board tiles
+
+  // ----- DOM -----
+  const canvas = document.getElementById('board');
+  const ctx = canvas.getContext('2d');
+  const status = document.getElementById('status');
+  const setupDiv = document.getElementById('setup');
+  const playerForms = document.getElementById('playerForms');
+  const numPlayersSelect = document.getElementById('numPlayers');
+  const buildBtn = document.getElementById('buildBtn');
+  const startBtn = document.getElementById('startBtn');
+  const sheetUrlInput = document.getElementById('sheetUrl');
+  // 👇 DEFAULT GOOGLE SHEET CSV LINK 👇
+  // To use your own, replace the URL below with your published-to-web CSV link.
+  // Example: sheetUrlInput.value = "https://docs.google.com/spreadsheets/d/e/YOUR-SHEET-ID/pub?output=csv";
+  sheetUrlInput.value = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR8cxYccJYnsPhMVdzrNSRhGtfitFog4ksNy4r9Jfm34OaicPsbBwMmxyooQBD-_FevXncXo7rIkIO1/pub?output=csv";
+  const customTitleInput = document.getElementById('customTitle');
+  const titleEl = document.querySelector('h1');
+  const controls = document.getElementById('controls');
+  const rollBtn = document.getElementById('rollBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const manualToggle = document.getElementById('manualToggle');
+  const modal = document.getElementById('questionModal');
+  const tileLabel = document.getElementById('tileLabel');
+  const questionText = document.getElementById('questionText');
+  const closeModalBtn = document.getElementById('closeModal');
+
+  // ----- State -----
+  let path = [];            // [{x,y}]
+  let players = [];         // [{name,color,emoji,tokenType,pos}]
+  let currentPlayer = 0;
+  let pendingRoll = 0;      // store dice result when manual mode used
+  let questions = Array(TOTAL).fill('Loading...');
+  // Animation state for FINISH celebration
+  let animRAF = null;
+  let finishAnim = null; // { start, duration, particles: [{x,y,vx,vy,life,color,size}] }
+
+  function logTurn(msg){ status.textContent = msg; }
+
+  // ----- Drawing helpers -----
+  function roundedRect(x,y,w,h,r){
+    const rr = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+rr,y);
+    ctx.arcTo(x+w,y,x+w,y+h,rr);
+    ctx.arcTo(x+w,y+h,x,y+h,rr);
+    ctx.arcTo(x,y+h,x,y,rr);
+    ctx.arcTo(x,y,x+w,y,rr);
+    ctx.closePath();
+  }
+
+  function drawBoard(){
+    // base board
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    // tiles
+    path.forEach((p,i)=>{
+      const x = p.x - TILE/2, y = p.y - TILE/2;
+      ctx.fillStyle = tileColors[i % tileColors.length];
+      roundedRect(x,y,TILE,TILE,RADIUS);
+      ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#111'; ctx.stroke();
+      ctx.fillStyle = '#111';
+      ctx.font = 'bold 35px "Luckiest Guy", cursive';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      if(i === TOTAL-1){
+        ctx.font = 'bold 22px "Luckiest Guy", cursive';
+        ctx.fillText('FINISH', p.x, p.y);
+        ctx.font = 'bold 35px "Luckiest Guy", cursive';
+      } else {
+        ctx.fillText(String(i+1), p.x, p.y);
+      }
+    });
+    // tokens (bigger)
+    players.forEach((pl,idx)=>{
+      const p = path[pl.pos]; if(!p) return;
+      if(pl.tokenType === 'emoji' && pl.emoji){
+        ctx.font='bold 40px "Luckiest Guy", cursive';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillStyle='#111';
+        ctx.fillText(pl.emoji, p.x, p.y);
+      } else {
+        const r = 22 + idx*3; // bigger color tokens
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r, 0, Math.PI*2);
+        ctx.fillStyle = pl.color || 'red'; ctx.fill();
+        ctx.fillStyle = '#000'; ctx.font='bold 16px "Luckiest Guy", cursive'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(pl.name.slice(0,1).toUpperCase(), p.x, p.y);
+      }
+    });
+    // overlay effects if any
+    if(finishAnim){ renderFinishEffects(); }
+  }
+
+  // ----- Path builder (continuous + outward connectors) -----
+  function buildPath(){
+    path = [];
+    const stepX = TILE; // tiles touch horizontally (continuous)
+    const startX = (canvas.width - (TILES_PER_ROW - 1) * stepX) / 2;
+    const startY = canvas.height - 100;
+    let i=0, row=0;
+    while(i < TOTAL){
+      const y = startY - row*STEP_Y;
+      if(row % 2 === 0){ // left -> right
+        for(let c=0;c<TILES_PER_ROW && i<TOTAL;c++){ path.push({x:startX + c*stepX, y}); i++; }
+      } else { // right -> left
+        for(let c=TILES_PER_ROW-1;c>=0 && i<TOTAL;c--){ path.push({x:startX + c*stepX, y}); i++; }
+      }
+      if(i < TOTAL){ // connector tile with outward curve
+        const last = path[path.length-1];
+        const midY = y - STEP_Y/2; // halfway toward next row
+        const shift = (row%2===0 ? stepX*0.5 : -stepX*0.5); // outward
+        let cx = last.x + shift;
+        const margin = TILE/2 + 10;
+        cx = Math.min(canvas.width - margin, Math.max(margin, cx));
+        path.push({x: cx, y: midY});
+        i++;
+      }
+      row++;
+    }
+  }
+
+  // ----- CSV loader -----
+  async function loadQuestions(url){
+    if(!url){ questions = Array(TOTAL).fill('').map((_,i)=>`Question ${i+1}`); return; }
+    try{
+      const res = await fetch(url);
+      const txt = await res.text();
+      const lines = txt.trim().split(/\r?\n/);
+      if(lines.length && /tile|question/i.test(lines[0])) lines.shift();
+      questions = lines.slice(0,TOTAL).map(line => {
+        const parts = line.split(',');
+        return (parts[1]||parts[0]||'').trim();
+      });
+      while(questions.length < TOTAL) questions.push('');
+    }catch(err){
+      console.error(err);
+      questions = Array(TOTAL).fill('').map((_,i)=>`Question ${i+1}`);
+    }
+  }
+
+  // ----- Dice + moves -----
+  function rollDice(){
+    const r = Math.floor(Math.random()*6)+1;
+    if (manualToggle.checked) {
+      pendingRoll = r;
+      status.textContent = `${players[currentPlayer].name} rolled ${r}. Manual mode is ON — click a tile to move.`;
+      return; // don't auto-move in manual mode
+    }
+    moveBy(r);
+    status.textContent = `${players[currentPlayer].name} rolled ${r}`;
+  }
+  function moveBy(steps){
+    const pl = players[currentPlayer];
+    pl.pos = Math.min(pl.pos + steps, TOTAL-1);
+    drawBoard();
+    onLand(pl.pos);
+  }
+  function onLand(index){
+    if(index>=0 && index<TOTAL){
+      if(index === TOTAL-1){
+        startFinishAnimation();
+        tileLabel.textContent = 'FINISH';
+        questionText.textContent = '🎉 Congratulations! You reached the finish!';
+        modal.style.display='flex';
+        return;
+      }
+      tileLabel.textContent = `Tile #${index+1}`;
+      questionText.textContent = questions[index] || `Question ${index+1}`;
+      modal.style.display='flex';
+    }
+  }
+  function nextTurn(){ currentPlayer = (currentPlayer+1) % players.length; logTurn(`Turn: ${players[currentPlayer].name}`); }
+  function resetGame(){ if(animRAF){ cancelAnimationFrame(animRAF); animRAF=null; } finishAnim=null; players.forEach(p=>p.pos=0); currentPlayer=0; drawBoard(); logTurn('Game reset.'); }
+
+  // Manual move: click a tile to move current player's token there
+  canvas.addEventListener('click', (e)=>{
+    if(!manualToggle.checked) return;
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const my = (e.clientY - rect.top) * (canvas.height / rect.height);
+    let best=-1, bestD=1e9;
+    path.forEach((p,i)=>{
+      const dx = p.x - mx, dy = p.y - my; const d=dx*dx+dy*dy; if(d<bestD){bestD=d; best=i;}
+    });
+    if(best>=0){
+      players[currentPlayer].pos = best;
+      drawBoard();
+      onLand(best);
+      if (pendingRoll) { status.textContent = `${players[currentPlayer].name} moved after rolling ${pendingRoll}.`; pendingRoll = 0; }
+    }
+  });
+
+  // Modal close
+  closeModalBtn.addEventListener('click', ()=> modal.style.display='none');
+  modal.addEventListener('click', (e)=>{ if(e.target===modal) modal.style.display='none'; });
+
+  // ----- Finish animation -----
+  function startFinishAnimation(){
+    const finishP = path[TOTAL-1]; if(!finishP) return;
+    const N = 160; const colors = ["#ef4444","#f97316","#eab308","#22c55e","#3b82f6","#a855f7","#10b981","#f59e0b"];
+    finishAnim = { start: performance.now(), duration: 1800, particles: [] };
+    for(let i=0;i<N;i++){
+      const angle = Math.random()*Math.PI*2; const speed = 2 + Math.random()*5;
+      finishAnim.particles.push({ x: finishP.x, y: finishP.y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed - 1.5, life: 1, color: colors[i%colors.length], size: 3 + Math.random()*3 });
+    }
+    if(!animRAF) animRAF = requestAnimationFrame(animationLoop);
+  }
+  function renderFinishEffects(){
+    if(!finishAnim) return; const now = performance.now(); const t = (now - finishAnim.start) / finishAnim.duration;
+    const p = path[TOTAL-1]; if(p){ const pulse = 1 + 0.25*Math.sin(t*Math.PI*6); ctx.save(); ctx.strokeStyle = 'rgba(17,17,17,0.6)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(p.x, p.y, (TILE*0.7)*pulse, 0, Math.PI*2); ctx.stroke(); ctx.restore(); }
+    ctx.save(); finishAnim.particles.forEach(pt=>{ pt.vy += 0.15; pt.vx *= 0.995; pt.vy *= 0.995; pt.x += pt.vx; pt.y += pt.vy; pt.life *= 0.985; ctx.globalAlpha = Math.max(0, pt.life); ctx.fillStyle = pt.color; ctx.beginPath(); ctx.rect(pt.x, pt.y, pt.size, pt.size); ctx.fill(); }); ctx.restore();
+  }
+  function animationLoop(){ ctx.clearRect(0,0,canvas.width,canvas.height); drawBoard(); if(finishAnim){ renderFinishEffects(); if(performance.now() - finishAnim.start > finishAnim.duration){ finishAnim = null; } } if(finishAnim){ animRAF = requestAnimationFrame(animationLoop); } else { animRAF = null; } }
+
+  // ----- Setup Forms (colors + animal emojis, no duplicates) -----
+  const colorChoices = ["red","blue","green","yellow","purple","orange"];
+  const emojiChoices = ["🪱","🐌","🦎","🐜","👾","🐟"]; // worm, snail, lizard, ant, monster, fish
+
+  function buildForms(){
+    playerForms.innerHTML='';
+    const n = parseInt(numPlayersSelect.value,10);
+    for(let i=0;i<n;i++){
+      const box=document.createElement('div'); box.className='player-input';
+      box.innerHTML = `<label><strong>Player ${i+1} Name</strong><br><input id="pname${i}" type="text" placeholder="Player ${i+1}" style="padding:8px;border:1px solid #e5e7eb;border-radius:10px;width:100%"/></label>`;
+
+      const tokenRow=document.createElement('div'); tokenRow.className='row'; tokenRow.style.marginTop='6px'; tokenRow.style.gap='8px';
+      // colors
+      const colorsDiv=document.createElement('div'); colorsDiv.className='color-options';
+      colorChoices.forEach(col=>{ const dot=document.createElement('div'); dot.className='swatch'; dot.style.background=col; dot.dataset.type='color'; dot.dataset.value=col; dot.setAttribute('role','button'); dot.setAttribute('aria-label',`Choose ${col}`);
+        dot.onclick=()=>{ tokenRow.querySelectorAll('.selected').forEach(s=>s.classList.remove('selected')); dot.classList.add('selected'); };
+        colorsDiv.appendChild(dot);
+      });
+      // emojis
+      const emojisDiv=document.createElement('div'); emojisDiv.className='color-options';
+      emojiChoices.forEach(em=>{ const btn=document.createElement('div'); btn.className='emoji'; btn.textContent=em; btn.dataset.type='emoji'; btn.dataset.value=em; btn.setAttribute('role','button'); btn.setAttribute('aria-label',`Choose ${em}`);
+        btn.onclick=()=>{ tokenRow.querySelectorAll('.selected').forEach(s=>s.classList.remove('selected')); btn.classList.add('selected'); };
+        emojisDiv.appendChild(btn);
+      });
+      const labelA=document.createElement('div'); labelA.textContent='Colors:'; labelA.style.minWidth='60px';
+      const labelB=document.createElement('div'); labelB.textContent='Animals:'; labelB.style.minWidth='68px';
+      tokenRow.append(labelA, colorsDiv, labelB, emojisDiv);
+
+      box.appendChild(tokenRow);
+      playerForms.appendChild(box);
+    }
+  }
+  // Build forms on initial load and when changing number of players
+  buildForms();
+  buildBtn.addEventListener('click', buildForms);
+  numPlayersSelect.addEventListener('change', buildForms);
+
+  // Start game (prevent duplicate tokens)
+  startBtn.addEventListener('click', async ()=>{
+    players = [];
+    const n = parseInt(numPlayersSelect.value,10);
+    const used = new Set();
+
+    // clear any previous highlights
+    Array.from(playerForms.children).forEach(f=> f.style.boxShadow='none');
+
+    for(let i=0;i<n;i++){
+      const name = document.getElementById(`pname${i}`).value || `Player ${i+1}`;
+      const form = playerForms.children[i];
+      const selected = form.querySelector('.selected');
+      let tokenType='color', color=undefined, emoji=undefined, key;
+
+      if(selected){
+        tokenType = selected.dataset.type;
+        if(tokenType==='emoji'){ emoji = selected.dataset.value; key = `emoji:${emoji}`; }
+        else { color = selected.dataset.value; key = `color:${color}`; }
+      } else {
+        // auto-assign first available color not used
+        color = colorChoices.find(c=>!used.has(`color:${c}`)) || palette.find(c=>!used.has(`color:${c}`)) || 'red';
+        key = `color:${color}`;
+      }
+
+      if(used.has(key)){
+        // duplicate found -> highlight and abort
+        form.style.boxShadow = '0 0 0 3px #ef4444';
+        alert(`Duplicate token detected for ${name}. Please pick a unique color or animal.`);
+        return;
+      }
+      used.add(key);
+      players.push({name, color, emoji, tokenType, pos:0});
+    }
+
+    await loadQuestions(sheetUrlInput.value.trim());
+    const newTitle = (customTitleInput.value || '').trim();
+    if(newTitle){ titleEl.textContent = newTitle; document.title = newTitle; }
+    // reveal title and switch to fun font in-game
+    titleEl.style.display = 'block';
+    document.body.style.fontFamily = '"Luckiest Guy", cursive';
+
+    buildPath();
+    setupDiv.style.display='none';
+    controls.style.display='flex';
+    canvas.style.display='block';
+    drawBoard();
+    logTurn(`Turn: ${players[0].name}`);
+  });
+
+  rollBtn.addEventListener('click', rollDice);
+  nextBtn.addEventListener('click', nextTurn);
+  resetBtn.addEventListener('click', resetGame);
+})();
+</script>
+</body>
 </html>
