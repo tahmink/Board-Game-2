@@ -107,7 +107,7 @@
   // 👇 DEFAULT GOOGLE SHEET CSV LINK 👇
   // To use your own, replace the URL below with your published-to-web CSV link.
   // Example: sheetUrlInput.value = "https://docs.google.com/spreadsheets/d/e/YOUR-SHEET-ID/pub?output=csv";
-  sheetUrlInput.value = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRYK1m9PwLBgOW9t32jGm30IMI_Y76RsKqYITwwmTKnXxzPscSs0Fyzot2G3bmXTlGfcU0aKCic66OB/pub?output=csv";
+  sheetUrlInput.value = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR8cxYccJYnsPhMVdzrNSRhGtfitFog4ksNy4r9Jfm34OaicPsbBwMmxyooQBD-_FevXncXo7rIkIO1/pub?output=csv";
   const customTitleInput = document.getElementById('customTitle');
   const titleEl = document.querySelector('h1');
   const controls = document.getElementById('controls');
@@ -291,6 +291,8 @@
   // ----- Finish animation -----
   function startFinishAnimation(){
     const finishP = path[TOTAL-1]; if(!finishP) return;
+
+    // --- Confetti burst ---
     const N = 160; const colors = ["#ef4444","#f97316","#eab308","#22c55e","#3b82f6","#a855f7","#10b981","#f59e0b"];
     finishAnim = { start: performance.now(), duration: 1800, particles: [] };
     for(let i=0;i<N;i++){
@@ -298,7 +300,44 @@
       finishAnim.particles.push({ x: finishP.x, y: finishP.y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed - 1.5, life: 1, color: colors[i%colors.length], size: 3 + Math.random()*3 });
     }
     if(!animRAF) animRAF = requestAnimationFrame(animationLoop);
+
+    // --- Frog + crown animation ---
+    const frogImg = new Image();
+    frogImg.src = "https://img.freepik.com/premium-vector/vector-cute-adorable-bright-green-frog-pixel-art-style-suitable-sticker-decoration_515427-240.jpg";
+    const crownImg = new Image();
+    crownImg.src = "https://i.fbcd.co/products/resized/resized-750-500/pixel-art-golden-crowd-clipart-element-illustration-aedc080644e0318a1def9348637c1894b2df7840eeda519e73a42664f109a6d6.jpg";
+
+    const duration = 2500; const start = performance.now();
+    function frogAnimLoop(now){
+      const t = Math.min(1, (now - start)/duration);
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      drawBoard();
+      renderFinishEffects();
+
+      // Frog hops in
+      const frogX = finishP.x - 60;
+      const frogY = finishP.y + Math.sin(t * Math.PI * 2) * 10;
+      ctx.drawImage(frogImg, frogX - 24, frogY - 24, 48, 48);
+
+      // Crown floats toward player
+      const crownX = frogX + t * 70;
+      const crownY = frogY - 30 - Math.sin(t * Math.PI) * 15;
+      ctx.drawImage(crownImg, crownX - 16, crownY - 16, 32, 32);
+
+      if(t < 1){ requestAnimationFrame(frogAnimLoop); }
+      else {
+        ctx.drawImage(frogImg, frogX - 24, frogY - 24, 48, 48);
+        ctx.drawImage(crownImg, finishP.x - 16, finishP.y - 40, 32, 32);
+      }
+    }
+    requestAnimationFrame(frogAnimLoop);
+
+    // Modal message
+    tileLabel.textContent = 'FINISH';
+    questionText.textContent = '🎉 Congratulations! The frog crowns you champion!';
+    modal.style.display='flex';
   }
+
   function renderFinishEffects(){
     if(!finishAnim) return; const now = performance.now(); const t = (now - finishAnim.start) / finishAnim.duration;
     const p = path[TOTAL-1]; if(p){ const pulse = 1 + 0.25*Math.sin(t*Math.PI*6); ctx.save(); ctx.strokeStyle = 'rgba(17,17,17,0.6)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(p.x, p.y, (TILE*0.7)*pulse, 0, Math.PI*2); ctx.stroke(); ctx.restore(); }
